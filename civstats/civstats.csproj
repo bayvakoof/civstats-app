@@ -83,8 +83,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="CivFileWatcher.cs" />
+    <Compile Include="CivSQLiteTracker.cs" />
+    <Compile Include="DemographicsTracker.cs" />
+    <Compile Include="IStatsTracker.cs" />
+    <Compile Include="PoliciesTracker.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="ReligionTracker.cs" />
+    <Compile Include="StatsUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

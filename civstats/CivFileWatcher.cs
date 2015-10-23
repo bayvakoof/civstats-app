@@ -10,19 +10,25 @@ namespace civstats
 {
     class CivFileWatcher
     {
-        public delegate void ProcessChangeDelegate(string fullpath);
-        private Dictionary<string, ProcessChangeDelegate> watches;
+        public delegate void ProcessFileChangeDelegate(string fullpath);
+
+        private string filename;
+        private string filetype;
+        private ProcessFileChangeDelegate callback;
+
         private FileSystemWatcher watcher;
         private const string gameDirectory = "\\Documents\\My Games\\Sid Meier's Civilization 5";
         
-        public CivFileWatcher()
+        public CivFileWatcher(string filename, string filetype, ProcessFileChangeDelegate callback)
         {
-            watches = new Dictionary<string, ProcessChangeDelegate>();
+            this.filename = filename;
+            this.filetype = filetype;
+            this.callback = callback;
 
             watcher = new FileSystemWatcher();
             watcher.Path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + gameDirectory;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
-            watcher.Filter = "*.db";
+            watcher.Filter = "*." + filetype;
             watcher.IncludeSubdirectories = true;
             watcher.Changed += new FileSystemEventHandler(ChangeHandler);
             watcher.EnableRaisingEvents = true;
@@ -30,19 +36,11 @@ namespace civstats
 
         private void ChangeHandler(object source, FileSystemEventArgs e)
         {
-            foreach (var key in watches.Keys)
+            if (e.Name.IndexOf(filename) != -1)
             {
-                if (e.Name.IndexOf(key) != -1)
-                {
-                    watches[key].DynamicInvoke(e.FullPath);
-                    return;
-                }
+                callback.DynamicInvoke(e.FullPath);
+                return;
             }
-        }
-
-        public void AddWatch(string filename, ProcessChangeDelegate callback)
-        {
-            watches.Add(filename, callback);
         }
     }
 }
