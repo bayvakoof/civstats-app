@@ -22,7 +22,7 @@ namespace civstats
             watcher = new FileSystemWatcher();
             watcher.Path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + gameDirectory;
             watcher.NotifyFilter = NotifyFilters.LastWrite;
-            watcher.Filter = "*.txt";
+            watcher.Filter = "*.db";
             watcher.IncludeSubdirectories = true;
             watcher.Changed += new FileSystemEventHandler(ChangeHandler);
             watcher.EnableRaisingEvents = true;
@@ -34,7 +34,7 @@ namespace civstats
             {
                 if (e.Name.IndexOf(key) != -1)
                 {
-                    watches[e.Name].DynamicInvoke(e.FullPath);
+                    watches[key].DynamicInvoke(e.FullPath);
                     return;
                 }
             }

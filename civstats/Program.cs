@@ -6,71 +6,74 @@ using System.Net;
 using System.Runtime.Serialization.Json;
 using System.IO;
 using System.Threading;
+using System.Data.SQLite;
 
 namespace civstats
 {
     class Program
     {
         static WebClient client;
+        static SQLiteConnection demoDBConnection;
 
         static void Main(string[] args)
         {
             client = new WebClient();
             client.Headers.Add("Content-Type", "application/json");
 
+            demoDBConnection = null;
+
             CivFileWatcher watcher = new CivFileWatcher();
-            watcher.AddWatch("demographics.txt", UpdateDemos);
+            watcher.AddWatch("civstats-1.db", UpdateDemos);
 
             Console.WriteLine("Reporting civ stats... press any key to exit");
             Console.ReadKey();
         }
 
         /**
-        Parse the demographics.txt file and send an update to the website
+        Parse the civstats file and send an update to the website
         */
         public static void UpdateDemos(string fullpath)
         {
             Thread.Sleep(100); // sleep a little to let the previous file IO finish
-            StreamReader reader = new StreamReader(fullpath);
-            Update update = null;
-
-            try
+            
+            if (demoDBConnection == null)
             {
-                string playerName = null;
-                do
-                {
-                    if (playerName == null)
-                    {
-                        playerName = reader.ReadLine();
-                        update = new Update(new Streamer(playerName));
-                        update.demographics = new Demographics();
-                    }
-                    else
-                    {
-                        string key, value;
-                        string[] pair = reader.ReadLine().Split(',');
-                        key = pair[0];
-                        value = pair[1];
-                        if (update != null)
-                            update.demographics.Set(key, value);
-                    }
-                } while (reader.Peek() != -1);
-            } catch
-            { }
-            finally
-            {
-                reader.Close();
+                demoDBConnection = new SQLiteConnection("Data Source=" + fullpath + ";Version=3;");
             }
             
             try
             {
-                if (update != null)
-                    client.UploadString("http://civstats-byvkf.rhcloud.com/demos", "POST", update.ToJson());
-                Console.WriteLine(string.Format("Updated demos at {0}", DateTime.Now.ToString()));
-            }
-            catch (Exception e)
+                demoDBConnection.Open();
+                SQLiteCommand nameQuery = new SQLiteCommand("SELECT * FROM SimpleValues", demoDBConnection);
+                SQLiteDataReader reader = nameQuery.ExecuteReader();
+
+                string playerName = null;
+                Demographics demos = new Demographics();
+                while (reader.Read())
+                {
+                    string key = reader["name"].ToString();
+                    string value = reader["value"].ToString();
+                    if (key == "playerName")
+                    {
+                        playerName = value;
+                    }
+                    else { demos.Set(key, value); }
+                }
+
+                if (playerName != null)
+                {
+                    Update update = new Update(new Streamer(playerName));
+                    update.demographics = demos;
+                    var response = client.UploadString("http://civstats-byvkf.rhcloud.com/demos", "POST", update.ToJson());
+                    Console.WriteLine(string.Format("Updated demos at {0}", DateTime.Now.ToString()));
+                }
+            } catch (Exception e)
             {
                 Console.WriteLine(e.Message);
+            }
+            finally
+            {
+                demoDBConnection.Close();
             }
         }
     }
@@ -117,7 +120,7 @@ namespace civstats
         public float gold;
         public int land;
         public int approval;
-        public int military;
+        public float military;
         public int literacy;
 
         public Demographics()
@@ -158,7 +161,7 @@ namespace civstats
                     approval = int.Parse(value);
                     break;
                 case "military":
-                    military = int.Parse(value);
+                    military = float.Parse(value);
                     break;
                 case "literacy":
                     literacy = int.Parse(value);
