@@ -13,13 +13,13 @@ namespace civstats
     {
         public Dictionary<string, float> demographics;
         public Dictionary<string, int> policies;
-        public string religion;
+        public Dictionary<string, string> religion;
 
         public StatsUpdate()
         {
             demographics = new Dictionary<string, float>();
             policies = new Dictionary<string, int>();
-            religion = null;
+            religion = new Dictionary<string, string>();
         }
 
         public string ToJson()

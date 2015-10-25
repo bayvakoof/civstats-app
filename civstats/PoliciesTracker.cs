@@ -17,7 +17,7 @@ namespace civstats
 
             foreach (KeyValuePair<string, string> entry in pairs)
             {
-                update.policies[entry.Key] = int.Parse(entry.Value);
+                update.policies[entry.Key.ToLower()] = int.Parse(entry.Value);
             }
 
             return update;

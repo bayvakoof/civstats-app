@@ -15,7 +15,7 @@ namespace civstats
         {
             StatsUpdate update = new StatsUpdate();
             var beliefs = pairs.ToArray().Where(x => x.Key.IndexOf("type") == -1).Select(x => x.Value);
-            update.religion = String.Join(", ", beliefs);
+            update.religion["beliefs"] = String.Join(", ", beliefs);
             return update;
         }
     }
