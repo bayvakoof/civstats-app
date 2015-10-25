@@ -34,6 +34,7 @@ namespace civstats
             Uri siteUri = new Uri("http://civstats-byvkf.rhcloud.com/players/" + id + "/upload");
             WebClient client = new WebClient();
             client.Headers.Add("Authorization", "Token " + key);
+            client.Headers.Add("Content-Type", "application/json");
             var response = client.UploadString(siteUri, e.Update.ToJson());
             Console.WriteLine(response);
         }
