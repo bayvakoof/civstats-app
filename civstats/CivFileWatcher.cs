@@ -5,6 +5,8 @@ using System.Linq;
 using System.Security.Permissions;
 using System.Text;
 using System.Threading.Tasks;
+using System.Reactive.Linq;
+using System.Reactive;
 
 namespace civstats
 {
@@ -30,8 +32,10 @@ namespace civstats
             watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Filter = "*." + filetype;
             watcher.IncludeSubdirectories = true;
-            watcher.Changed += new FileSystemEventHandler(ChangeHandler);
             watcher.EnableRaisingEvents = true;
+
+            IObservable<EventPattern<FileSystemEventArgs>> watcherChanged = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed");
+            watcherChanged.Throttle(TimeSpan.FromSeconds(2)).Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
         }
 
         private void ChangeHandler(object source, FileSystemEventArgs e)

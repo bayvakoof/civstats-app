@@ -12,26 +12,17 @@ namespace civstats
     {
         protected CivFileWatcher watcher;
         protected SQLiteConnection dbConnection;
-        protected DateTime lastUpdated;
 
         public event EventHandler<StatsTrackerEventArgs> Changed;
 
         public CivSQLiteStatsTracker(string dbname)
         {
             dbConnection = null;
-            lastUpdated = DateTime.Now;
             watcher = new CivFileWatcher(dbname, "db", HandleDBUpdate);
         }
 
         private void HandleDBUpdate(string fullpath)
         {
-            /* every ModUserData.SetValue writes to the file immediately (and fires off the event),
-               so wait 1 second after the first SetValue to ensure that all values that
-               were to be updated have been updated */
-            Thread.Sleep(1000); 
-            if (lastUpdated != null && DateTime.Now.Subtract(lastUpdated).TotalSeconds < 5)
-                return; // don't send updates too frequently
-
             if (dbConnection == null)
             {
                 dbConnection = new SQLiteConnection("Data Source=" + fullpath + ";Version=3;");
@@ -54,7 +45,6 @@ namespace civstats
                 // raise the event
                 StatsUpdate update = MakeStatsUpdate(pairs);
                 EmitEvent(new StatsTrackerEventArgs(update));
-                lastUpdated = DateTime.Now;
             }
             catch (Exception e)
             {

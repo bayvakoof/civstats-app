@@ -23,7 +23,8 @@ namespace civstats
                 }
 
                 string branch = entry.Key.Split('-')[0];
-                update.policies.Add(new PolicyChoice(branch, entry.Value));
+                if (!string.IsNullOrEmpty(entry.Value))
+                    update.policies.Add(new PolicyChoice(branch, entry.Value));
             }
 
             return update;
