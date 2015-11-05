@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using System.Net;
+using System.Threading;
 
 namespace civstats
 {
@@ -10,32 +11,55 @@ namespace civstats
     {
         static string id;
         static string key;
+#if DEBUG
+        const string SITE_URL = "http://httpbin.org/post";
+        const int API_VERSION = -1;
+#else
+        const string SITE_URL = "http://civstats-byvkf.rhcloud.com/";
+        const int API_VERSION = 1; // the version of the API the app is compatible with
+#endif
 
         static void Main(string[] args)
         {
+            Console.Title = "CivStats";
+            /*if (!IsUpToDate())
+            {
+                Console.Write("This app needs to be updated. Please update the app.");
+                Console.ReadKey();
+                return;
+            }*/
+            
             CheckSettings();
+
             id = Properties.Settings.Default.id;
             key = Properties.Settings.Default.key;
 
-            DemographicsTracker dt = new DemographicsTracker();
-            PoliciesTracker pt = new PoliciesTracker();
-            ReligionTracker rt = new ReligionTracker();
+            IStatsTracker[] trackers = {
+                new DemographicsTracker(),
+                new PoliciesTracker(),
+                new ReligionTracker()
+            };
 
-            dt.Changed += StatsTrackerHandler;
-            pt.Changed += StatsTrackerHandler;
-            rt.Changed += StatsTrackerHandler;
+            foreach (IStatsTracker tracker in trackers)
+            {
+                tracker.Changed += StatsTrackerHandler;
+            }
 
-            Console.WriteLine("Reporting civ stats... press any key to exit when you're done playing");
+            Console.WriteLine("Reporting civ stats. Please exit after you've finished playing.");
             Console.ReadKey();
         }
         
         static void StatsTrackerHandler(object source, StatsTrackerEventArgs e)
         {
-            Uri siteUri = new Uri("http://civstats-byvkf.rhcloud.com/players/" + id + "/upload");
+#if DEBUG
+            Uri uploadUri = new Uri(SITE_URL);
+#else
+            Uri uploadUri = new Uri(SITE_URL + "players/" + id + "/update");
+#endif
             WebClient client = new WebClient();
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
-            var response = client.UploadString(siteUri, e.Update.ToJson());
+            var response = client.UploadString(uploadUri, e.Update.ToJson());
             Console.WriteLine(response);
         }
 
@@ -45,27 +69,21 @@ namespace civstats
                 PromptSettings();
             else
             {
-                Nullable<bool> useExisting = null;
-                Console.Write("Use existing settings? (y/n) ");
-                do
+                Console.Write("Using existing settings, press a key to enter new settings");
+                DateTime start = DateTime.Now;
+                while ((DateTime.Now - start).Seconds < 5 && !Console.KeyAvailable)
                 {
-                    ConsoleKeyInfo response = Console.ReadKey();
-                    switch (response.KeyChar)
-                    {
-                        case 'y':
-                        case 'Y':
-                            useExisting = true;
-                            break;
-                        case 'n':
-                        case 'N':
-                            useExisting = false;
-                            break;
-                    }
-                } while (useExisting == null);
-                Console.WriteLine("");
+                    Console.Write(".");
+                    Thread.Sleep(1000);
+                }
+                Console.WriteLine();
 
-                if (useExisting == false)
+                if (Console.KeyAvailable)
+                {
+                    Console.ReadKey(); // eat up the entered key
+                    Console.Clear();
                     PromptSettings();
+                }
             }
         }
 
@@ -76,6 +94,21 @@ namespace civstats
             Console.Write("Enter your private key: ");
             Properties.Settings.Default.key = Console.ReadLine();
             Properties.Settings.Default.Save();
+        }
+
+        static bool IsUpToDate()
+        {
+            Uri apiUri = new Uri(SITE_URL + "api/version");
+            WebClient client = new WebClient();
+            var response = client.DownloadString(apiUri);
+            Console.WriteLine(response);
+            int siteApiVersion = 0;
+            int.TryParse(response, out siteApiVersion);
+
+            if (siteApiVersion > API_VERSION)
+                return false;
+
+            return true;
         }
     }
 }

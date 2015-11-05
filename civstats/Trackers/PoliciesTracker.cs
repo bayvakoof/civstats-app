@@ -6,18 +6,24 @@ using System.Threading.Tasks;
 
 namespace civstats
 {
-    class PoliciesTracker : CivSQLiteStatsTracker
+    public class PoliciesTracker : CivSQLiteStatsTracker
     {
         public PoliciesTracker() : base("civstats-policies")
         { }
 
         public override StatsUpdate MakeStatsUpdate(Dictionary<string, string> pairs)
         {
-            StatsUpdate update = new StatsUpdate();
-
+            PoliciesUpdate update = new PoliciesUpdate();
             foreach (KeyValuePair<string, string> entry in pairs)
             {
-                update.policies[entry.Key.ToLower()] = int.Parse(entry.Value);
+                if (entry.Key == "turn")
+                {
+                    update.turn = int.Parse(entry.Value);
+                    continue;
+                }
+
+                string branch = entry.Key.Split('-')[0];
+                update.policies.Add(new PolicyChoice(branch, entry.Value));
             }
 
             return update;

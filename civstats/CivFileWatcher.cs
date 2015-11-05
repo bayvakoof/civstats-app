@@ -8,7 +8,7 @@ using System.Threading.Tasks;
 
 namespace civstats
 {
-    class CivFileWatcher
+    public class CivFileWatcher
     {
         public delegate void ProcessFileChangeDelegate(string fullpath);
 

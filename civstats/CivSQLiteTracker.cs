@@ -8,7 +8,7 @@ using System.Threading;
 
 namespace civstats
 {
-    abstract class CivSQLiteStatsTracker : IStatsTracker
+    public abstract class CivSQLiteStatsTracker : IStatsTracker
     {
         protected CivFileWatcher watcher;
         protected SQLiteConnection dbConnection;
@@ -25,7 +25,10 @@ namespace civstats
 
         private void HandleDBUpdate(string fullpath)
         {
-            Thread.Sleep(100);
+            /* every ModUserData.SetValue writes to the file immediately (and fires off the event),
+               so wait 1 second after the first SetValue to ensure that all values that
+               were to be updated have been updated */
+            Thread.Sleep(1000); 
             if (lastUpdated != null && DateTime.Now.Subtract(lastUpdated).TotalSeconds < 5)
                 return; // don't send updates too frequently
 

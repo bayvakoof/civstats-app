@@ -97,9 +97,12 @@
   <ItemGroup>
     <Compile Include="CivFileWatcher.cs" />
     <Compile Include="CivSQLiteTracker.cs" />
-    <Compile Include="DemographicsTracker.cs" />
+    <Compile Include="Trackers\DemographicsTracker.cs" />
+    <Compile Include="Trackers\WondersTracker.cs" />
+    <Compile Include="Updates\DemographicsUpdate.cs" />
     <Compile Include="IStatsTracker.cs" />
-    <Compile Include="PoliciesTracker.cs" />
+    <Compile Include="Trackers\PoliciesTracker.cs" />
+    <Compile Include="Updates\PoliciesUpdate.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
@@ -107,8 +110,10 @@
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="ReligionTracker.cs" />
-    <Compile Include="StatsUpdate.cs" />
+    <Compile Include="Trackers\ReligionTracker.cs" />
+    <Compile Include="Updates\ReligionUpdate.cs" />
+    <Compile Include="Updates\StatsUpdate.cs" />
+    <Compile Include="Updates\WondersUpdate.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="App.config" />

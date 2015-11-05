@@ -11,20 +11,16 @@ namespace civstats
     [Serializable]
     public class StatsUpdate
     {
-        public Dictionary<string, float> demographics;
-        public Dictionary<string, int> policies;
-        public Dictionary<string, string> religion;
+        public int turn;
 
         public StatsUpdate()
         {
-            demographics = new Dictionary<string, float>();
-            policies = new Dictionary<string, int>();
-            religion = new Dictionary<string, string>();
+            turn = 0;
         }
 
         public string ToJson()
         {
-            var serializer = new DataContractJsonSerializer(typeof(StatsUpdate), new DataContractJsonSerializerSettings()
+            var serializer = new DataContractJsonSerializer(this.GetType(), new DataContractJsonSerializerSettings()
             {
                 UseSimpleDictionaryFormat = true
             });
