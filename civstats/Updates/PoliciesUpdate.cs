@@ -20,13 +20,15 @@ namespace civstats
     [Serializable]
     class PolicyChoice
     {
+        public int turn;
+        public int cultureCost;
         public string branch;
         public string name;
+        public bool _destroy;
 
-        public PolicyChoice(string branch, string name)
+        public PolicyChoice()
         {
-            this.branch = branch;
-            this.name = name;
+            _destroy = false;
         }
     }
 }

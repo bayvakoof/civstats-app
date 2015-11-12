@@ -9,7 +9,6 @@ namespace civstats
     interface IStatsTracker
     {
         event EventHandler<StatsTrackerEventArgs> Changed;
-        StatsUpdate MakeStatsUpdate(Dictionary<string, string> pairs);
     }
 
     public class StatsTrackerEventArgs : EventArgs

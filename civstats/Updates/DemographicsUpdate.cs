@@ -18,6 +18,7 @@ namespace civstats
 
     [Serializable]
     public class Demographic {
+        public int turn;
         public string category;
         public float value;
         public float average;
@@ -27,6 +28,9 @@ namespace civstats
         {
             switch (p)
             {
+                case "turn":
+                    turn = int.Parse(v);
+                    break;
                 case "category":
                     category = v;
                     break;

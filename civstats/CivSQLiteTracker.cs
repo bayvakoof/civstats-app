@@ -38,8 +38,11 @@ namespace civstats
                 while (reader.Read())
                 {
                     string key = reader["name"].ToString();
-                    string value = reader["value"].ToString();
-                    pairs[key] = value;
+                    string val = reader["value"].ToString();
+                    pairs[key] = val;
+#if DEBUG
+                    Console.WriteLine("Got SimpleValue update: {0}, {1}", key, val);
+#endif
                 }
 
                 // raise the event

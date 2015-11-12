@@ -14,12 +14,13 @@ namespace civstats
         public override StatsUpdate MakeStatsUpdate(Dictionary<string, string> pairs)
         {
             DemographicsUpdate update = new DemographicsUpdate();
+            int turn = 0;
 
             foreach (KeyValuePair<string, string> entry in pairs)
             {
                 if (entry.Key == "turn")
                 {
-                    update.turn = int.Parse(entry.Value);
+                    turn = int.Parse(entry.Value);
                     continue;
                 }
 
@@ -34,6 +35,7 @@ namespace civstats
                 {
                     demo = new Demographic();
                     demo.category = category;
+                    demo.turn = turn;
                     update.demographics.Add(demo);
                 }
 

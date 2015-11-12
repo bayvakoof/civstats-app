@@ -128,7 +128,7 @@
     </Compile>
     <Compile Include="Trackers\ReligionTracker.cs" />
     <Compile Include="Updates\ReligionUpdate.cs" />
-    <Compile Include="Updates\StatsUpdate.cs" />
+    <Compile Include="StatsUpdate.cs" />
     <Compile Include="Updates\WondersUpdate.cs" />
   </ItemGroup>
   <ItemGroup>

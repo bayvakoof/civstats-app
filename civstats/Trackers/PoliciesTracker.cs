@@ -14,17 +14,23 @@ namespace civstats
         public override StatsUpdate MakeStatsUpdate(Dictionary<string, string> pairs)
         {
             PoliciesUpdate update = new PoliciesUpdate();
-            foreach (KeyValuePair<string, string> entry in pairs)
+            // iterate over policy ids 
+            // (pairs contains keys of the format, <policyId>: "1", <policyId>-turn: ... etc)
+            int temp; string luaTrueVal = "1";
+            var policies = pairs.Where(x => int.TryParse(x.Key, out temp));
+            foreach (KeyValuePair<string, string> entry in policies)
             {
-                if (entry.Key == "turn")
+                string id = entry.Key;
+                PolicyChoice choice = new PolicyChoice
                 {
-                    update.turn = int.Parse(entry.Value);
-                    continue;
-                }
+                    turn = int.Parse(pairs[id + "-turn"]),
+                    name = pairs[id + "-name"],
+                    branch = pairs[id + "-branch"]
+                };
+                if (entry.Value != luaTrueVal)
+                    choice._destroy = true;
 
-                string branch = entry.Key.Split('-')[0];
-                if (!string.IsNullOrEmpty(entry.Value))
-                    update.policies.Add(new PolicyChoice(branch, entry.Value));
+                update.policies.Add(choice);
             }
 
             return update;

@@ -11,23 +11,22 @@ namespace civstats
     {
         static string id;
         static string key;
-#if DEBUG
-        const string SITE_URL = "http://httpbin.org/post";
-        const int API_VERSION = -1;
-#else
         const string SITE_URL = "http://civstats-byvkf.rhcloud.com/";
+#if DEBUG
+        const int API_VERSION = int.MaxValue;
+#else
         const int API_VERSION = 1; // the version of the API the app is compatible with
 #endif
 
         static void Main(string[] args)
         {
             Console.Title = "CivStats";
-            /*if (!IsUpToDate())
+            if (!IsUpToDate())
             {
                 Console.Write("This app needs to be updated. Please update the app.");
                 Console.ReadKey();
                 return;
-            }*/
+            }
             
             CheckSettings();
 
@@ -42,25 +41,24 @@ namespace civstats
 
             foreach (IStatsTracker tracker in trackers)
             {
-                tracker.Changed += StatsTrackerHandler;
+                tracker.Changed += StatsTrackerChangedHandler;
             }
 
             Console.WriteLine("Reporting civ stats. Please exit after you've finished playing.");
             Console.ReadKey();
         }
         
-        static void StatsTrackerHandler(object source, StatsTrackerEventArgs e)
+        static void StatsTrackerChangedHandler(object source, StatsTrackerEventArgs e)
         {
-#if DEBUG
-            Uri uploadUri = new Uri(SITE_URL);
-#else
             Uri uploadUri = new Uri(SITE_URL + "players/" + id + "/update");
-#endif
             WebClient client = new WebClient();
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
             var response = client.UploadString(uploadUri, e.Update.ToJson());
-            Console.WriteLine(response);
+            if (response.Contains("500"))
+                Console.WriteLine("Update failure: {0}", e.Update.ToJson());
+            else
+                Console.WriteLine(response);
         }
 
         static void CheckSettings()
@@ -100,8 +98,15 @@ namespace civstats
         {
             Uri apiUri = new Uri(SITE_URL + "api/version");
             WebClient client = new WebClient();
-            var response = client.DownloadString(apiUri);
-            Console.WriteLine(response);
+            string response;
+            try
+            {
+                response = client.DownloadString(apiUri);
+            } catch (Exception)
+            {
+                return false;
+            }
+
             int siteApiVersion = 0;
             int.TryParse(response, out siteApiVersion);
 
