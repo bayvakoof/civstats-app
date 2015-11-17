@@ -34,9 +34,11 @@ namespace civstats
             key = Properties.Settings.Default.key;
 
             IStatsTracker[] trackers = {
+                new GameTracker(),
                 new DemographicsTracker(),
                 new PoliciesTracker(),
-                new ReligionTracker()
+                new ReligionTracker(),
+                new WondersTracker()
             };
 
             foreach (IStatsTracker tracker in trackers)
@@ -55,10 +57,7 @@ namespace civstats
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
             var response = client.UploadString(uploadUri, e.Update.ToJson());
-            if (response.Contains("500"))
-                Console.WriteLine("Update failure: {0}", e.Update.ToJson());
-            else
-                Console.WriteLine(response);
+            Console.WriteLine("params: {0}, {1}", e.Update.ToJson(), response);
         }
 
         static void CheckSettings()

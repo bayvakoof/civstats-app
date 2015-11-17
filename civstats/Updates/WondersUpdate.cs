@@ -20,13 +20,10 @@ namespace civstats
     [Serializable]
     public class Wonder
     {
-        string name;
-        int acquired; // turn acquired
-
-        public Wonder(string name, int acquired)
-        {
-            this.name = name;
-            this.acquired = acquired;
-        }
+        public string name;
+        public string city;
+        public int turn;
+        public bool conquered;
+        public bool _destroy;
     }
 }
