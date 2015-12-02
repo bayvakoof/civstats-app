@@ -8,20 +8,23 @@ using System.Threading;
 
 namespace civstats
 {
-    public abstract class CivSQLiteStatsTracker : IStatsTracker
+    /**
+    Tracks changes to the civstats databases
+    */
+    public abstract class CivSQLiteDatabaseTracker : IStatsTracker
     {
         protected CivFileWatcher watcher;
         protected SQLiteConnection dbConnection;
 
         public event EventHandler<StatsTrackerEventArgs> Changed;
 
-        public CivSQLiteStatsTracker(string dbname)
+        public CivSQLiteDatabaseTracker(string dbname)
         {
             dbConnection = null;
-            watcher = new CivFileWatcher(dbname, "db", HandleDBUpdate);
+            watcher = new CivFileWatcher(dbname, "db", ReadDatabase);
         }
 
-        private void HandleDBUpdate(string fullpath)
+        private void ReadDatabase(string fullpath)
         {
             if (dbConnection == null)
             {
@@ -45,9 +48,9 @@ namespace civstats
 #endif
                 }
 
+                ParseDatabaseEntries(pairs);
                 // raise the event
-                StatsUpdate update = MakeStatsUpdate(pairs);
-                EmitEvent(new StatsTrackerEventArgs(update));
+                EmitEvent(new StatsTrackerEventArgs());
             }
             catch (Exception e)
             {
@@ -73,6 +76,6 @@ namespace civstats
             }
         }
 
-        public abstract StatsUpdate MakeStatsUpdate(Dictionary<string, string> pairs);
+        protected abstract void ParseDatabaseEntries(Dictionary<string, string> pairs);
     }
 }

@@ -4,45 +4,72 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace civstats
+namespace civstats.Trackers
 {
-    public class DemographicsTracker : CivSQLiteStatsTracker
-    {   
-        public DemographicsTracker() : base("civstats-demos")
-        { }
-
-        public override StatsUpdate MakeStatsUpdate(Dictionary<string, string> pairs)
+    public class DemographicsTracker : CivSQLiteDatabaseTracker
+    {
+        public int Turn { get; private set; }
+        private Dictionary<string, Demographic> demographics;
+        public IEnumerable<Demographic> Demographics
         {
-            DemographicsUpdate update = new DemographicsUpdate();
-            int turn = 0;
+            get { return demographics.Values.AsEnumerable(); }
+        }
 
-            foreach (KeyValuePair<string, string> entry in pairs)
+        public DemographicsTracker() : base("civstats-demos")
+        {
+            Turn = 0;
+            demographics = new Dictionary<string, Demographic>();
+        }
+
+        /**
+        The demographics database contains one "turn" key that contains the turn number
+        for the saved demographics and the rest of the keys are in the "[category]-[property]"
+        format (e.g. "food-average", "production-rank", "literacy-value") */
+        protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
+        {
+            if (pairs.ContainsKey("turn"))
+                Turn = int.Parse(pairs["turn"]);
+
+            List<string> categories = new List<string>();
+            foreach (string key in pairs.Keys)
             {
-                if (entry.Key == "turn")
-                {
-                    turn = int.Parse(entry.Value);
+                if (key == "turn")
                     continue;
-                }
 
-                // key is of the format <category>-<property>
-                // e.g. food-average, production-rank, literacy-value etc.
-                string[] descriptors = entry.Key.Split('-');
-                string category = descriptors[0], property = descriptors[1];
-
-                var demo = update.demographics.Find(x => x.category == category);
-
-                if (demo == null)
-                {
-                    demo = new Demographic();
-                    demo.category = category;
-                    demo.turn = turn;
-                    update.demographics.Add(demo);
-                }
-
-                demo.Set(property, entry.Value);
+                string category = key.Split('-')[0];
+                if (!categories.Contains(category))
+                    categories.Add(category);
             }
-            
-            return update;
+
+            foreach (string category in categories)
+            {
+                Categories cat;
+                Enum.TryParse(category, true, out cat);
+                float val = float.Parse(pairs[category + "-value"]);
+                float ave = float.Parse(pairs[category + "-average"]);
+                int rank = int.Parse(pairs[category + "-rank"]);
+
+                demographics[category] = new Demographic(cat, val, ave, rank);
+            }
+        }
+    }
+
+    public enum Categories { Population, Food, Production, Gold, Land,
+        Military, Approval, Literacy }
+
+    public class Demographic
+    {
+        public readonly Categories Category;
+        public readonly float Value;
+        public readonly float Average;
+        public readonly int Rank;
+
+        public Demographic(Categories category, float value, float average, int rank)
+        {
+            Category = category;
+            Value = value;
+            Average = average;
+            Rank = rank;
         }
     }
 }

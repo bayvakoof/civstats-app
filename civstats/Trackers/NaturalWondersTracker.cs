@@ -6,18 +6,18 @@ using System.Threading.Tasks;
 
 namespace civstats.Trackers
 {
-    public class WondersTracker : CivSQLiteDatabaseTracker
+    public class NaturalWondersTracker : CivSQLiteDatabaseTracker
     {
         private const string LuaTrueValue = "1";
-        private Dictionary<string, Wonder> wonders;
-        public IEnumerable<Wonder> Wonders
+        private Dictionary<string, NaturalWonder> wonders;
+        public IEnumerable<NaturalWonder> Wonders
         {
             get { return wonders.Values.AsEnumerable(); }
         }
 
-        public WondersTracker() : base("civstats-wonders")
+        public NaturalWondersTracker() : base("civstats-wonders")
         {
-            wonders = new Dictionary<string, Wonder>();
+            wonders = new Dictionary<string, NaturalWonder>();
         }
 
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
@@ -29,33 +29,35 @@ namespace civstats.Trackers
             foreach (KeyValuePair<string, string> entry in ids)
             {
                 string id = entry.Key;
-                Wonder wonder;
+                NaturalWonder wonder;
                 if (!wonders.TryGetValue(id, out wonder))
                 {
                     bool captured = (pairs[id + "-conquered"] == LuaTrueValue);
-                    wonder = new Wonder(int.Parse(pairs[id + "-turn"]),
-                        pairs[id + "-name"], pairs[id + "-city"], captured);
+                    wonder = new NaturalWonder(int.Parse(pairs[id + "-turn"]),
+                        pairs[id + "-name"], pairs[id + "-city"], int.Parse(pairs[id + "-distance"]), captured);
                     wonders[id] = wonder;
                 }
-                
+
                 wonders[id].Retained = (entry.Value == LuaTrueValue);
             }
         }
     }
 
-    public class Wonder
+    public class NaturalWonder
     {
         public readonly int TurnAcquired;
         public readonly string Name;
         public readonly string CityName;
-        public readonly bool Captured; // whether it was acquired thru conquest or built
-        public bool Retained { get; set; } // false if the player lost the city containing it
+        public readonly int Distance; // distance from capital
+        public readonly bool Captured; // whether it was acquired thru conquest or settled
+        public bool Retained { get; set; } // false if the player lost the tile
 
-        public Wonder(int turn, string name, string city, bool captured)
+        public NaturalWonder(int turn, string name, string city, int distance, bool captured)
         {
             TurnAcquired = turn;
             Name = name;
             CityName = city;
+            Distance = distance;
             Captured = captured;
             Retained = true;
         }

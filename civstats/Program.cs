@@ -4,6 +4,7 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Net;
 using System.Threading;
+using civstats.Trackers;
 
 namespace civstats
 {
@@ -36,9 +37,11 @@ namespace civstats
             IStatsTracker[] trackers = {
                 new GameTracker(),
                 new DemographicsTracker(),
-                new PoliciesTracker(),
+                new PolicyChoicesTracker(),
                 new ReligionTracker(),
-                new WondersTracker()
+                new WondersTracker(),
+                new WarsTracker(),
+                new NaturalWondersTracker()
             };
 
             foreach (IStatsTracker tracker in trackers)
@@ -54,10 +57,14 @@ namespace civstats
         {
             Uri uploadUri = new Uri(SITE_URL + "players/" + id + "/update");
             WebClient client = new WebClient();
+            IStatsTracker tracker = (IStatsTracker)source;
+            tracker.GetType();
+            //Update update = tracker.GetUpdate();
+            //client.UploadString(uploadUri, )
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
-            var response = client.UploadString(uploadUri, e.Update.ToJson());
-            Console.WriteLine("params: {0}, {1}", e.Update.ToJson(), response);
+            //var response = client.UploadString(uploadUri, e.Update.ToJson());
+            //Console.WriteLine("params: {0}, {1}", e.Update.ToJson(), response);
         }
 
         static void CheckSettings()

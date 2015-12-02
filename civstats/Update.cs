@@ -9,9 +9,9 @@ using System.IO;
 namespace civstats
 {
     [Serializable]
-    public abstract class StatsUpdate
+    public abstract class Update
     {
-        public StatsUpdate()
+        public Update()
         { }
 
         public string ToJson()

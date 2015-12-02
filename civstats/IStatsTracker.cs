@@ -13,15 +13,7 @@ namespace civstats
 
     public class StatsTrackerEventArgs : EventArgs
     {
-        public StatsTrackerEventArgs(StatsUpdate u)
-        {
-            update = u;
-        }
-
-        private StatsUpdate update;
-        public StatsUpdate Update
-        {
-            get { return update; }
-        }
+        public StatsTrackerEventArgs()
+        { }
     }
 }
