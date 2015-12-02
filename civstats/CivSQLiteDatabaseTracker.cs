@@ -24,6 +24,12 @@ namespace civstats
             watcher = new CivFileWatcher(dbname, "db", ReadDatabase);
         }
 
+        ~CivSQLiteDatabaseTracker()
+        {
+            if (dbConnection != null)
+                dbConnection.Dispose();
+        }
+
         private void ReadDatabase(string fullpath)
         {
             if (dbConnection == null)

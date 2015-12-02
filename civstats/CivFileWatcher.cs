@@ -34,8 +34,15 @@ namespace civstats
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
 
-            IObservable<EventPattern<FileSystemEventArgs>> watcherChanged = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed");
-            watcherChanged.Throttle(TimeSpan.FromSeconds(2)).Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
+            IObservable<EventPattern<FileSystemEventArgs>> watcherObserver = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed")
+                .Merge(Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Created"));
+
+            watcherObserver.Throttle(TimeSpan.FromSeconds(2)).Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
+        }
+
+        ~CivFileWatcher()
+        {
+            watcher.Dispose();
         }
 
         private void ChangeHandler(object source, FileSystemEventArgs e)
