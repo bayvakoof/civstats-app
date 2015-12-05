@@ -31,28 +31,24 @@ namespace civstats.Trackers
         */
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
+            choices.Clear();
+
             int temp;
             var ids = pairs.Where(x => int.TryParse(x.Key, out temp));
 
             foreach (KeyValuePair<string, string> entry in ids)
             {
-                if (choices.ContainsKey(entry.Key))
+                string id = entry.Key;
+                PolicyBranches branch;
+                Enum.TryParse(pairs[id + "-branch"], out branch);
+                choices[entry.Key] = new PolicyChoice
                 {
-                    choices[entry.Key].Active = (entry.Value == LuaTrueValue);
-                } else
-                {
-                    string id = entry.Key;
-                    PolicyBranches branch;
-                    Enum.TryParse(pairs[id + "-branch"], out branch);
-                    choices[entry.Key] = new PolicyChoice
-                    {
-                        Turn = int.Parse(pairs[id + "-turn"]),
-                        Cost = int.Parse(pairs[id + "-cost"]),
-                        Branch = branch,
-                        Name = pairs[id + "-name"],
-                        Active = entry.Value == LuaTrueValue
-                    };
-                }
+                    Turn = int.Parse(pairs[id + "-turn"]),
+                    Cost = float.Parse(pairs[id + "-cost"]),
+                    Branch = branch,
+                    Name = pairs[id + "-name"],
+                    Active = entry.Value == LuaTrueValue
+                };
             }
         }
     }
@@ -63,7 +59,7 @@ namespace civstats.Trackers
     public class PolicyChoice
     {
         public int Turn { get; set; }
-        public int Cost { get; set; }
+        public float Cost { get; set; }
         public PolicyBranches Branch { get; set; }
         public string Name { get; set; }
         // Active only applies to ideology, false if the player loses this choice 

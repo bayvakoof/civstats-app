@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace civstats.Trackers
 {
-    class WarsTracker : CivSQLiteDatabaseTracker
+    public class WarsTracker : CivSQLiteDatabaseTracker
     {
         private const string LuaTrueValue = "1";
         private Dictionary<string, WarEvent> warEvents;
@@ -22,18 +22,16 @@ namespace civstats.Trackers
 
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
+            warEvents.Clear();
             foreach (KeyValuePair<string, string> entry in pairs)
             {
-                if (!warEvents.ContainsKey(entry.Key))
-                {
-                    string[] info = entry.Key.Split('-');
-                    warEvents[entry.Key] = new WarEvent(int.Parse(info[1]), info[0], info[2] == "war", entry.Value == LuaTrueValue);
-                }
+                string[] info = entry.Key.Split('-');
+                warEvents[entry.Key] = new WarEvent(int.Parse(info[1]), info[0], info[2] != "war", entry.Value == LuaTrueValue);
             }
         }
     }
     
-    class WarEvent
+    public class WarEvent
     {
         public readonly int Turn;
         public readonly string Civilization;

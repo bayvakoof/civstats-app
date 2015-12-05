@@ -24,6 +24,8 @@ namespace civstats.Trackers
 
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
+            beliefs.Clear();
+
             foreach (KeyValuePair<string, string> entry in pairs)
             {
                 if (entry.Key.Contains("type"))

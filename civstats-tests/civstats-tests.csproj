@@ -35,7 +35,12 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
+      <HintPath>..\packages\Newtonsoft.Json.7.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System" />
+    <Reference Include="System.ComponentModel.DataAnnotations" />
   </ItemGroup>
   <Choose>
     <When Condition="('$(VisualStudioVersion)' == '10.0' or '$(VisualStudioVersion)' == '') and '$(TargetFrameworkVersion)' == 'v3.5'">
@@ -54,8 +59,11 @@
   <ItemGroup>
     <Compile Include="DemographicsTrackerTest.cs" />
     <Compile Include="GameTrackerTest.cs" />
+    <Compile Include="PolicyChoicesTrackerTest.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ReligionTrackerTest.cs" />
+    <Compile Include="SerializerTest.cs" />
+    <Compile Include="WarTrackerTest.cs" />
     <Compile Include="WondersTrackerTest.cs" />
   </ItemGroup>
   <ItemGroup>
@@ -63,6 +71,10 @@
       <Project>{f7cc7d80-6687-46f2-9c60-98fbbb6aed00}</Project>
       <Name>civstats</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="App.config" />
+    <None Include="packages.config" />
   </ItemGroup>
   <Choose>
     <When Condition="'$(VisualStudioVersion)' == '10.0' And '$(IsCodedUITest)' == 'True'">

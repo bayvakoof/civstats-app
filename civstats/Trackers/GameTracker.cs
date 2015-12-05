@@ -26,6 +26,8 @@ namespace civstats.Trackers
         players and their civilizations in the game. */
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
+            players.Clear();
+
             // Players
             foreach (KeyValuePair<string, string> entry in pairs)
             {
@@ -41,9 +43,12 @@ namespace civstats.Trackers
             }
 
             // Game info
-            Speeds speed; Enum.TryParse(pairs["speed"], out speed);
-            Difficulties diff; Enum.TryParse(pairs["difficulty"], out diff);
-            MapSizes size; Enum.TryParse(pairs["size"], out size);
+            Speeds speed;
+            Enum.TryParse(pairs["speed"], out speed);
+            Difficulties diff;
+            Enum.TryParse(pairs["difficulty"], out diff);
+            MapSizes size;
+            Enum.TryParse(pairs["size"], out size);
 
             Info = new GameInfo(pairs["civilization"], pairs["map"], speed, diff, size);
         }

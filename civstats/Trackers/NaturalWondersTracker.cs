@@ -22,6 +22,8 @@ namespace civstats.Trackers
 
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
+            wonders.Clear(); // reread everything
+
             // Implemented exactly like policies with keys being in the "id-parameter": true/false
             // format, iterate over wonder ids 
             int temp;
@@ -29,16 +31,15 @@ namespace civstats.Trackers
             foreach (KeyValuePair<string, string> entry in ids)
             {
                 string id = entry.Key;
-                NaturalWonder wonder;
-                if (!wonders.TryGetValue(id, out wonder))
-                {
-                    bool captured = (pairs[id + "-conquered"] == LuaTrueValue);
-                    wonder = new NaturalWonder(int.Parse(pairs[id + "-turn"]),
-                        pairs[id + "-name"], pairs[id + "-city"], int.Parse(pairs[id + "-distance"]), captured);
-                    wonders[id] = wonder;
-                }
+                NaturalWonder wonder = new NaturalWonder(
+                    int.Parse(pairs[id + "-turn"]),
+                    pairs[id + "-name"], 
+                    pairs[id + "-city"], 
+                    int.Parse(pairs[id + "-distance"]),
+                    (pairs[id + "-conquered"] == LuaTrueValue));
 
-                wonders[id].Retained = (entry.Value == LuaTrueValue);
+                wonder.Retained = (entry.Value == LuaTrueValue);
+                wonders[id] = wonder; 
             }
         }
     }

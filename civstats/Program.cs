@@ -12,11 +12,12 @@ namespace civstats
     {
         static string id;
         static string key;
-        const string SITE_URL = "http://civstats-byvkf.rhcloud.com/";
+        static Serializer serializer;
+        const string SiteUrl = "http://civstats-byvkf.rhcloud.com/";
 #if DEBUG
-        const int API_VERSION = int.MaxValue;
+        const int ApiVersion = int.MaxValue;
 #else
-        const int API_VERSION = 1; // the version of the API the app is compatible with
+        const int ApiVersion = 1; // the version of the API the app is compatible with
 #endif
 
         static void Main(string[] args)
@@ -28,11 +29,12 @@ namespace civstats
                 Console.ReadKey();
                 return;
             }
-            
+
             CheckSettings();
 
             id = Properties.Settings.Default.id;
             key = Properties.Settings.Default.key;
+            serializer = new Serializer();
 
             IStatsTracker[] trackers = {
                 new GameTracker(),
@@ -55,16 +57,12 @@ namespace civstats
         
         static void StatsTrackerChangedHandler(object source, StatsTrackerEventArgs e)
         {
-            Uri uploadUri = new Uri(SITE_URL + "players/" + id + "/update");
+            Uri uploadUri = new Uri(SiteUrl + "players/" + id + "/update");
             WebClient client = new WebClient();
-            IStatsTracker tracker = (IStatsTracker)source;
-            tracker.GetType();
-            //Update update = tracker.GetUpdate();
-            //client.UploadString(uploadUri, )
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
-            //var response = client.UploadString(uploadUri, e.Update.ToJson());
-            //Console.WriteLine("params: {0}, {1}", e.Update.ToJson(), response);
+            var response = client.UploadString(uploadUri, serializer.Serialize(source));
+            Console.WriteLine("params: {0}, {1}", serializer.Serialize(source), response);
         }
 
         static void CheckSettings()
@@ -102,7 +100,7 @@ namespace civstats
 
         static bool IsUpToDate()
         {
-            Uri apiUri = new Uri(SITE_URL + "api/version");
+            Uri apiUri = new Uri(SiteUrl + "api/version");
             WebClient client = new WebClient();
             string response;
             try
@@ -116,7 +114,7 @@ namespace civstats
             int siteApiVersion = 0;
             int.TryParse(response, out siteApiVersion);
 
-            if (siteApiVersion > API_VERSION)
+            if (siteApiVersion > ApiVersion)
                 return false;
 
             return true;

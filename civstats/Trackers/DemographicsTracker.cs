@@ -8,7 +8,6 @@ namespace civstats.Trackers
 {
     public class DemographicsTracker : CivSQLiteDatabaseTracker
     {
-        public int Turn { get; private set; }
         private Dictionary<string, Demographic> demographics;
         public IEnumerable<Demographic> Demographics
         {
@@ -17,7 +16,6 @@ namespace civstats.Trackers
 
         public DemographicsTracker() : base("civstats-demos")
         {
-            Turn = 0;
             demographics = new Dictionary<string, Demographic>();
         }
 
@@ -27,8 +25,9 @@ namespace civstats.Trackers
         format (e.g. "food-average", "production-rank", "literacy-value") */
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
+            int turn = 0;
             if (pairs.ContainsKey("turn"))
-                Turn = int.Parse(pairs["turn"]);
+                turn = int.Parse(pairs["turn"]);
 
             List<string> categories = new List<string>();
             foreach (string key in pairs.Keys)
@@ -49,23 +48,26 @@ namespace civstats.Trackers
                 float ave = float.Parse(pairs[category + "-average"]);
                 int rank = int.Parse(pairs[category + "-rank"]);
 
-                demographics[category] = new Demographic(cat, val, ave, rank);
+                demographics[category] = new Demographic(turn, cat, val, ave, rank);
             }
         }
     }
-
-    public enum Categories { Population, Food, Production, Gold, Land,
-        Military, Approval, Literacy }
-
+    
+    public enum Categories {
+        Population, Food, Production, Gold, Land, Military, Approval, Literacy
+    }
+    
     public class Demographic
     {
+        public readonly int Turn;
         public readonly Categories Category;
         public readonly float Value;
         public readonly float Average;
         public readonly int Rank;
 
-        public Demographic(Categories category, float value, float average, int rank)
+        public Demographic(int turn, Categories category, float value, float average, int rank)
         {
+            Turn = turn;
             Category = category;
             Value = value;
             Average = average;
