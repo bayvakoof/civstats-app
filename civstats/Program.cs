@@ -14,6 +14,7 @@ namespace civstats
         static string key;
         static Serializer serializer;
         const string SiteUrl = "http://civstats-byvkf.rhcloud.com/";
+        static Dictionary<Type, Uri> TrackerUriMap;
 #if DEBUG
         const int ApiVersion = int.MaxValue;
 #else
@@ -42,8 +43,20 @@ namespace civstats
                 new PolicyChoicesTracker(),
                 new ReligionTracker(),
                 new WondersTracker(),
-                new WarsTracker(),
+                new WarEventsTracker(),
                 new NaturalWondersTracker()
+            };
+
+            string baseUrl = SiteUrl + "players/" + id;
+            TrackerUriMap = new Dictionary<Type, Uri>
+            {
+                { typeof(GameTracker), new Uri(baseUrl + "/games/create") },
+                { typeof(DemographicsTracker), new Uri(baseUrl + "/demographics/create") },
+                { typeof(PolicyChoicesTracker), new Uri(baseUrl + "/policies/create") },
+                { typeof(ReligionTracker), new Uri(baseUrl + "/religions/create") },
+                { typeof(WondersTracker), new Uri(baseUrl + "/wonders/create") },
+                { typeof(WarEventsTracker), new Uri(baseUrl + "/wars/create") },
+                { typeof(NaturalWondersTracker), new Uri(baseUrl + "/wonders/create") },
             };
 
             foreach (IStatsTracker tracker in trackers)
@@ -57,12 +70,18 @@ namespace civstats
         
         static void StatsTrackerChangedHandler(object source, StatsTrackerEventArgs e)
         {
-            Uri uploadUri = new Uri(SiteUrl + "players/" + id + "/update");
             WebClient client = new WebClient();
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
-            var response = client.UploadString(uploadUri, serializer.Serialize(source));
-            Console.WriteLine("params: {0}, {1}", serializer.Serialize(source), response);
+            try
+            {
+                var response = client.UploadString(TrackerUriMap[source.GetType()], serializer.Serialize(source));
+                Console.WriteLine(response);
+            }
+            catch (Exception exception)
+            {
+                Console.WriteLine("Error: {0}, params: {1}", exception.Message, serializer.Serialize(source));
+            }
         }
 
         static void CheckSettings()

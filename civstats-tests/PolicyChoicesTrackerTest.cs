@@ -20,7 +20,7 @@ namespace civstats_tests
                 { "1-cost", "15.53" }
             };
             ParseDatabaseEntries(pairs);
-            foreach (var choice in Choices)
+            foreach (var choice in PolicyChoices)
             {
                 Assert.AreEqual(13, choice.Turn);
                 Assert.AreEqual(PolicyBranches.Tradition, choice.Branch);

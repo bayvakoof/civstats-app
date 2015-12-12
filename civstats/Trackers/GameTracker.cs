@@ -8,9 +8,13 @@ namespace civstats.Trackers
 {
     public class GameTracker : CivSQLiteDatabaseTracker
     {
-        public GameInfo Info { get; private set; }
+        public string Civilization { get; private set; }
+        public string Map { get; private set; }
+        public Speeds Speed { get; private set; }
+        public Difficulties Difficulty { get; private set; }
+        public MapSizes Size { get; private set; }
         private List<Player> players;
-        public IEnumerable<Player> Players
+        public IEnumerable<Player> CivilizationAttributes // serialization
         {
             get { return players.AsEnumerable(); }
         }
@@ -26,9 +30,22 @@ namespace civstats.Trackers
         players and their civilizations in the game. */
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
-            players.Clear();
+            // Game info
+            Civilization = pairs["civilization"];
+            Map = pairs["map"];
+            Speeds speed;
+            Enum.TryParse(pairs["speed"], out speed);
+            Speed = speed;
+            Difficulties diff;
+            Enum.TryParse(pairs["difficulty"], out diff);
+            Difficulty = diff;
+            MapSizes size;
+            Enum.TryParse(pairs["size"], out size);
+            Size = size;
 
             // Players
+            players.Clear();
+
             foreach (KeyValuePair<string, string> entry in pairs)
             {
                 if (Char.IsNumber(entry.Key[0]))
@@ -37,31 +54,21 @@ namespace civstats.Trackers
                     char playerNumber = entry.Key[0];
                     string name = pairs[playerNumber + "-name"];
                     string civilization = pairs[playerNumber + "-civ"];
-                    if (!players.Any(x => x.Name == name))
+                    if (!players.Any(x => x.Leader == name))
                         players.Add(new Player(name, civilization));
                 }
             }
-
-            // Game info
-            Speeds speed;
-            Enum.TryParse(pairs["speed"], out speed);
-            Difficulties diff;
-            Enum.TryParse(pairs["difficulty"], out diff);
-            MapSizes size;
-            Enum.TryParse(pairs["size"], out size);
-
-            Info = new GameInfo(pairs["civilization"], pairs["map"], speed, diff, size);
         }
     }
 
     public class Player
     {
-        public readonly string Name;
+        public readonly string Leader;
         public readonly string Civilization;
 
-        public Player(string name, string civilization)
+        public Player(string leader, string civilization)
         {
-            Name = name;
+            Leader = leader;
             Civilization = civilization;
         }
     }
@@ -69,22 +76,4 @@ namespace civstats.Trackers
     public enum Speeds { Quick, Standard, Epic, Marathon };
     public enum Difficulties { Settler, Chieftain, Warlord, Prince, King, Emperor, Immortal, Diety }
     public enum MapSizes { Duel, Tiny, Small, Standard, Large, Huge }
-
-    public class GameInfo
-    {
-        public readonly string Civilization;
-        public readonly string Map;
-        public readonly Speeds Speed;
-        public readonly Difficulties Difficulty;
-        public readonly MapSizes Size;
-
-        public GameInfo(string civ, string map, Speeds speed, Difficulties diff, MapSizes size)
-        {
-            Civilization = civ;
-            Map = map;
-            Speed = speed;
-            Difficulty = diff;
-            Size = size;
-        }
-    }
 }

@@ -29,15 +29,13 @@ namespace civstats
 
             watcher = new FileSystemWatcher();
             watcher.Path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + gameDirectory;
-            watcher.NotifyFilter = NotifyFilters.LastWrite;
+            watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess;
             watcher.Filter = "*." + filetype;
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
 
-            IObservable<EventPattern<FileSystemEventArgs>> watcherObserver = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed")
-                .Merge(Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Created"));
-
-            watcherObserver.Throttle(TimeSpan.FromSeconds(2)).Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
+            IObservable<EventPattern<FileSystemEventArgs>> watcherObserver = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed");
+            watcherObserver.Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
         }
 
         ~CivFileWatcher()

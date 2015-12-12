@@ -10,7 +10,7 @@ namespace civstats.Trackers
     {
         private const string LuaTrueValue = "1";
         private Dictionary<string, PolicyChoice> choices;
-        public IEnumerable<PolicyChoice> Choices
+        public IEnumerable<PolicyChoice> PolicyChoices
         {
             get
             {
@@ -39,16 +39,13 @@ namespace civstats.Trackers
             foreach (KeyValuePair<string, string> entry in ids)
             {
                 string id = entry.Key;
-                PolicyBranches branch;
-                Enum.TryParse(pairs[id + "-branch"], out branch);
-                choices[entry.Key] = new PolicyChoice
-                {
-                    Turn = int.Parse(pairs[id + "-turn"]),
-                    Cost = float.Parse(pairs[id + "-cost"]),
-                    Branch = branch,
-                    Name = pairs[id + "-name"],
-                    Active = entry.Value == LuaTrueValue
-                };
+                choices[entry.Key] = new PolicyChoice(
+                    pairs[id + "-name"], 
+                    pairs[id + "-branch"], 
+                    int.Parse(pairs[id + "-turn"]),
+                    float.Parse(pairs[id + "-cost"]),
+                    (entry.Value == LuaTrueValue)
+                );
             }
         }
     }
@@ -58,12 +55,38 @@ namespace civstats.Trackers
 
     public class PolicyChoice
     {
-        public int Turn { get; set; }
-        public float Cost { get; set; }
-        public PolicyBranches Branch { get; set; }
-        public string Name { get; set; }
+        private Policy policy;
+        public readonly int Turn;
+        public readonly float Cost;
         // Active only applies to ideology, false if the player loses this choice 
         // after changing their ideology (i.e. is true if player has policy)
-        public bool Active { get; set; } 
+        public readonly bool Active;
+        public Policy PolicyAttributes // named so for json serialization purposes
+        {
+            get { return policy; }
+        }
+
+        public PolicyChoice(string name, string branchName, int turn, float cost, bool active)
+        {
+            PolicyBranches branch;
+            Enum.TryParse(branchName, out branch);
+            policy = new Policy(name, branch);
+
+            Turn = turn;
+            Cost = cost;
+            Active = active;
+        }
+    }
+
+    public class Policy
+    {
+        public readonly string Name;
+        public readonly PolicyBranches Branch;
+
+        public Policy(string name, PolicyBranches branch)
+        {
+            Name = name;
+            Branch = branch;
+        }
     }
 }

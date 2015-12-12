@@ -21,11 +21,11 @@ namespace civstats_tests
                 { "difficulty", "Diety" }
             };
             ParseDatabaseEntries(pairs);
-            Assert.AreEqual("Poland", Info.Civilization);
-            Assert.AreEqual(Speeds.Quick, Info.Speed);
-            Assert.AreEqual(MapSizes.Small, Info.Size);
-            Assert.AreEqual(Difficulties.Diety, Info.Difficulty);
-            Assert.AreEqual("Continents", Info.Map);
+            Assert.AreEqual("Poland", Civilization);
+            Assert.AreEqual(Speeds.Quick, Speed);
+            Assert.AreEqual(MapSizes.Small, Size);
+            Assert.AreEqual(Difficulties.Diety, Difficulty);
+            Assert.AreEqual("Continents", Map);
         }
     }
 }

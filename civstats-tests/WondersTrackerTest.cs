@@ -27,7 +27,7 @@ namespace civstats_tests
                 Assert.AreEqual("Alhambra", wonder.Name);
                 Assert.AreEqual(80, wonder.Turn);
                 Assert.AreEqual(false, wonder.Captured);
-                Assert.AreEqual("Moscow", wonder.CityName);
+                Assert.AreEqual("Moscow", wonder.City);
             }
         }
     }

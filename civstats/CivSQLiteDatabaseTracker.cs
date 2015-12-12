@@ -14,58 +14,66 @@ namespace civstats
     public abstract class CivSQLiteDatabaseTracker : IStatsTracker
     {
         protected CivFileWatcher watcher;
-        protected SQLiteConnection dbConnection;
+        protected readonly string DatabaseName;
 
         public event EventHandler<StatsTrackerEventArgs> Changed;
 
-        public CivSQLiteDatabaseTracker(string dbname)
+        public CivSQLiteDatabaseTracker(string databaseName)
         {
-            dbConnection = null;
-            watcher = new CivFileWatcher(dbname, "db", ReadDatabase);
-        }
-
-        ~CivSQLiteDatabaseTracker()
-        {
-            if (dbConnection != null)
-                dbConnection.Dispose();
+            DatabaseName = databaseName;
+            watcher = new CivFileWatcher(DatabaseName, "db", ReadDatabase);
         }
 
         private void ReadDatabase(string fullpath)
         {
-            if (dbConnection == null)
+            // This code was preventing Modding.DeleteUserData from working because 
+            // CivStats' sqlite lib (System.Data.SQLite) would not release the database file
+            // See http://stackoverflow.com/questions/8511901/system-data-sqlite-close-not-releasing-database-file
+            // for the solution thats implemented
+            using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=" + fullpath + ";Version=3;"))
             {
-                dbConnection = new SQLiteConnection("Data Source=" + fullpath + ";Version=3;");
-            }
-
-            try
-            {
-                dbConnection.Open();
-                SQLiteCommand nameQuery = new SQLiteCommand("SELECT * FROM SimpleValues", dbConnection);
-                SQLiteDataReader reader = nameQuery.ExecuteReader();
-
-                Dictionary<string, string> pairs = new Dictionary<string, string>();
-                while (reader.Read())
+                try
                 {
-                    string key = reader["name"].ToString();
-                    string val = reader["value"].ToString();
-                    pairs[key] = val;
-#if DEBUG
-                    Console.WriteLine("Got SimpleValue update: {0}, {1}", key, val);
-#endif
-                }
+                    dbConnection.Open();
 
-                ParseDatabaseEntries(pairs);
-                // raise the event
-                EmitEvent(new StatsTrackerEventArgs());
+                    SQLiteDataReader reader;
+                    using (SQLiteCommand nameQuery = new SQLiteCommand("SELECT * FROM SimpleValues", dbConnection))
+                    {
+                        reader = nameQuery.ExecuteReader();
+                    }
+
+                    Dictionary<string, string> pairs = new Dictionary<string, string>();
+
+                    if (reader.HasRows)
+                    {
+                        while (reader.Read())
+                        {
+                            string key = reader["name"].ToString();
+                            string val = reader["value"].ToString();
+                            pairs[key] = val;
+#if DEBUG
+                            Console.WriteLine("Got SimpleValue update: {0}, {1}", key, val);
+#endif
+                        }
+                    }
+
+                    reader.Close();
+
+                    ParseDatabaseEntries(pairs);
+                    // raise the event
+                    EmitEvent(new StatsTrackerEventArgs());
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine("Error reading {0} database: {1}", DatabaseName, e.Message);
+                }
+                finally
+                {
+                    dbConnection.Close();
+                }
             }
-            catch (Exception e)
-            {
-                Console.WriteLine(e.Message);
-            }
-            finally
-            {
-                dbConnection.Close();
-            }
+
+            // SQLiteConnection.ClearAllPools(); // doesn't seem like this is necessary
         }
 
         private void EmitEvent(StatsTrackerEventArgs e)

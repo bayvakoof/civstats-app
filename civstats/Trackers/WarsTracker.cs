@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 
 namespace civstats.Trackers
 {
-    public class WarsTracker : CivSQLiteDatabaseTracker
+    public class WarEventsTracker : CivSQLiteDatabaseTracker
     {
         private const string LuaTrueValue = "1";
         private Dictionary<string, WarEvent> warEvents;
@@ -15,7 +15,7 @@ namespace civstats.Trackers
             get { return warEvents.Values.AsEnumerable(); }
         }
 
-        public WarsTracker() : base("civstats-wars")
+        public WarEventsTracker() : base("civstats-wars")
         {
             warEvents = new Dictionary<string, WarEvent>();
         }
@@ -35,14 +35,14 @@ namespace civstats.Trackers
     {
         public readonly int Turn;
         public readonly string Civilization;
-        public readonly bool IsPeaceTreaty;
+        public readonly bool Peace; // true if its a peace treaty being made, false if war dec
         public readonly bool Aggressor; // if war dec, then true if player initiated war, false otherwise
 
         public WarEvent(int turn, string civilization, bool peace, bool aggressor)
         {
             Turn = turn;
             Civilization = civilization;
-            IsPeaceTreaty = peace;
+            Peace = peace;
             Aggressor = aggressor;
         }
     }

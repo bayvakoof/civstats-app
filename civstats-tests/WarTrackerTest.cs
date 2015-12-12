@@ -6,7 +6,7 @@ using civstats.Trackers;
 namespace civstats_tests
 {
     [TestClass]
-    public class WarTrackerTest : WarsTracker
+    public class WarEventsTrackerTest : WarEventsTracker
     {
         [TestMethod]
         public void TestParseWarsDatabase() 
@@ -17,16 +17,16 @@ namespace civstats_tests
                 { "Poland-20-peace", "" }
             };
             ParseDatabaseEntries(pairs);
-            foreach (var war in WarEvents)
+            foreach (var warEvent in WarEvents)
             {
-                if (war.IsPeaceTreaty)
-                    Assert.AreEqual(20, war.Turn);
+                if (warEvent.Peace)
+                    Assert.AreEqual(20, warEvent.Turn);
                 else
                 {
-                    Assert.AreEqual(10, war.Turn);
-                    Assert.AreEqual(true, war.Aggressor);
+                    Assert.AreEqual(10, warEvent.Turn);
+                    Assert.AreEqual(true, warEvent.Aggressor);
                 }
-                Assert.AreEqual("Poland", war.Civilization);
+                Assert.AreEqual("Poland", warEvent.Civilization);
             }
         }
     }

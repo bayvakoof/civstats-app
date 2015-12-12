@@ -10,12 +10,12 @@ namespace civstats.Trackers
     {
         private const string LuaTrueValue = "1";
         private Dictionary<string, NaturalWonder> wonders;
-        public IEnumerable<NaturalWonder> Wonders
+        public IEnumerable<NaturalWonder> NaturalWonders
         {
             get { return wonders.Values.AsEnumerable(); }
         }
 
-        public NaturalWondersTracker() : base("civstats-wonders")
+        public NaturalWondersTracker() : base("civstats-natural")
         {
             wonders = new Dictionary<string, NaturalWonder>();
         }
@@ -46,18 +46,18 @@ namespace civstats.Trackers
 
     public class NaturalWonder
     {
-        public readonly int TurnAcquired;
+        public readonly int Turn;
         public readonly string Name;
-        public readonly string CityName;
+        public readonly string City;
         public readonly int Distance; // distance from capital
         public readonly bool Captured; // whether it was acquired thru conquest or settled
         public bool Retained { get; set; } // false if the player lost the tile
 
         public NaturalWonder(int turn, string name, string city, int distance, bool captured)
         {
-            TurnAcquired = turn;
+            Turn = turn;
             Name = name;
-            CityName = city;
+            City = city;
             Distance = distance;
             Captured = captured;
             Retained = true;

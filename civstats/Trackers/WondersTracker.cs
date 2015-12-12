@@ -47,7 +47,7 @@ namespace civstats.Trackers
     {
         public readonly int Turn; // the turn it was captured or built
         public readonly string Name;
-        public readonly string CityName;
+        public readonly string City;
         public readonly bool Captured; // whether it was acquired thru conquest or built
         public bool Retained { get; set; } // false if the player lost the city containing it
 
@@ -55,7 +55,7 @@ namespace civstats.Trackers
         {
             Turn = turn;
             Name = name;
-            CityName = city;
+            City = city;
             Captured = captured;
             Retained = true;
         }
