@@ -29,13 +29,15 @@ namespace civstats
 
             watcher = new FileSystemWatcher();
             watcher.Path = Environment.GetFolderPath(Environment.SpecialFolder.UserProfile) + gameDirectory;
-            watcher.NotifyFilter = NotifyFilters.LastWrite | NotifyFilters.LastAccess;
+            watcher.NotifyFilter = NotifyFilters.LastWrite;
             watcher.Filter = "*." + filetype;
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
-
+            
             IObservable<EventPattern<FileSystemEventArgs>> watcherObserver = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed");
-            watcherObserver.Throttle(TimeSpan.FromMilliseconds(300)).Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
+            watcherObserver.Where(x => x.EventArgs.Name.Contains(filename))
+                .Throttle(TimeSpan.FromSeconds(2))
+                .Subscribe(events => ChangeHandler(events.Sender, events.EventArgs));
         }
 
         ~CivFileWatcher()
@@ -45,11 +47,7 @@ namespace civstats
 
         private void ChangeHandler(object source, FileSystemEventArgs e)
         {
-            if (e.Name.IndexOf(filename) != -1)
-            {
-                callback.DynamicInvoke(e.FullPath);
-                return;
-            }
+            callback.DynamicInvoke(e.FullPath);
         }
     }
 }
