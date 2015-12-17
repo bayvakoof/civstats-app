@@ -13,7 +13,7 @@ namespace civstats
         static string id;
         static string key;
         static Serializer serializer;
-        const string SiteUrl = "http://civstats-byvkf.rhcloud.com/";
+        const string SiteUrl = "http://localhost:3000/";
         static Dictionary<Type, Uri> TrackerUriMap;
 #if DEBUG
         const int ApiVersion = int.MaxValue;
@@ -33,6 +33,7 @@ namespace civstats
 
             CheckSettings();
 
+
             id = Properties.Settings.Default.id;
             key = Properties.Settings.Default.key;
             serializer = new Serializer();
@@ -50,19 +51,20 @@ namespace civstats
             string baseUrl = SiteUrl + "players/" + id;
             TrackerUriMap = new Dictionary<Type, Uri>
             {
-                { typeof(GameTracker), new Uri(baseUrl + "/games/create") },
-                { typeof(DemographicsTracker), new Uri(baseUrl + "/demographics/create") },
-                { typeof(PolicyChoicesTracker), new Uri(baseUrl + "/policies/create") },
-                { typeof(ReligionTracker), new Uri(baseUrl + "/religions/create") },
-                { typeof(WondersTracker), new Uri(baseUrl + "/wonders/create") },
-                { typeof(WarEventsTracker), new Uri(baseUrl + "/wars/create") },
-                { typeof(NaturalWondersTracker), new Uri(baseUrl + "/wonders/create") },
+                { typeof(GameTracker), new Uri(baseUrl + "/games") },
+                { typeof(DemographicsTracker), new Uri(baseUrl + "/demographics") },
+                { typeof(PolicyChoicesTracker), new Uri(baseUrl + "/policies") },
+                { typeof(ReligionTracker), new Uri(baseUrl + "/religions") },
+                { typeof(WondersTracker), new Uri(baseUrl + "/wonders") },
+                { typeof(WarEventsTracker), new Uri(baseUrl + "/wars") },
+                { typeof(NaturalWondersTracker), new Uri(baseUrl + "/wonders") },
             };
 
             foreach (IStatsTracker tracker in trackers)
             {
                 tracker.Changed += StatsTrackerChangedHandler;
             }
+            
 
             Console.WriteLine("Reporting civ stats. Please exit after you've finished playing.");
             Console.ReadKey();
@@ -73,6 +75,7 @@ namespace civstats
             WebClient client = new WebClient();
             client.Headers.Add("Authorization", "Token " + key);
             client.Headers.Add("Content-Type", "application/json");
+            
             try
             {
                 var response = client.UploadString(TrackerUriMap[source.GetType()], serializer.Serialize(source));

@@ -13,15 +13,16 @@ namespace civstats.Trackers
         public Speeds Speed { get; private set; }
         public Difficulties Difficulty { get; private set; }
         public MapSizes Size { get; private set; }
-        private List<Player> players;
-        public IEnumerable<Player> CivilizationAttributes // serialization
+        public int LoadedTurn { get; private set; }
+        private List<Civilization> civilizations;
+        public IEnumerable<Civilization> CivilizationsAttributes // serialization
         {
-            get { return players.AsEnumerable(); }
+            get { return civilizations.AsEnumerable(); }
         }
 
         public GameTracker() : base("civstats-game")
         {
-            players = new List<Player>();
+            civilizations = new List<Civilization>();
         }
 
         /**
@@ -43,8 +44,10 @@ namespace civstats.Trackers
             Enum.TryParse(pairs["size"], out size);
             Size = size;
 
-            // Players
-            players.Clear();
+            LoadedTurn = int.Parse(pairs["loaded-turn"]);
+
+            // Players in the game
+            civilizations.Clear();
 
             foreach (KeyValuePair<string, string> entry in pairs)
             {
@@ -52,24 +55,24 @@ namespace civstats.Trackers
                 {
                     // player information if the first character is a number
                     char playerNumber = entry.Key[0];
-                    string name = pairs[playerNumber + "-name"];
-                    string civilization = pairs[playerNumber + "-civ"];
-                    if (!players.Any(x => x.Leader == name))
-                        players.Add(new Player(name, civilization));
+                    string civilizationName = pairs[playerNumber + "-civ"];
+                    string playerName = pairs[playerNumber + "-name"];
+                    if (!civilizations.Any(x => x.Leader == playerName))
+                        civilizations.Add(new Civilization(civilizationName, playerName));
                 }
             }
         }
     }
 
-    public class Player
+    public class Civilization
     {
+        public readonly string Name;
         public readonly string Leader;
-        public readonly string Civilization;
 
-        public Player(string leader, string civilization)
+        public Civilization(string name, string leader)
         {
+            Name = name;
             Leader = leader;
-            Civilization = civilization;
         }
     }
 

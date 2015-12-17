@@ -33,7 +33,7 @@ namespace civstats
             watcher.Filter = "*." + filetype;
             watcher.IncludeSubdirectories = true;
             watcher.EnableRaisingEvents = true;
-            
+
             IObservable<EventPattern<FileSystemEventArgs>> watcherObserver = Observable.FromEventPattern<FileSystemEventArgs>(watcher, "Changed");
             watcherObserver.Where(x => x.EventArgs.Name.Contains(filename))
                 .Throttle(TimeSpan.FromSeconds(2))

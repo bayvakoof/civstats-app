@@ -8,8 +8,8 @@ namespace civstats.Trackers
 {
     public class ReligionTracker : CivSQLiteDatabaseTracker
     {
-        private List<Belief> beliefs;
-        public IEnumerable<Belief> Beliefs
+        private List<BeliefChoice> beliefs;
+        public IEnumerable<BeliefChoice> BeliefChoicesAttributes
         {
             get { return beliefs.AsEnumerable(); }
         }
@@ -19,7 +19,7 @@ namespace civstats.Trackers
 
         public ReligionTracker() : base("civstats-religion")
         {
-            beliefs = new List<Belief>();
+            beliefs = new List<BeliefChoice>();
         }
 
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
@@ -28,18 +28,35 @@ namespace civstats.Trackers
 
             foreach (KeyValuePair<string, string> entry in pairs)
             {
-                if (entry.Key.Contains("type"))
-                    continue; // skip the type entries (e.g. <key, value>: <"1-type", "pantheon">)
+                if (entry.Key.Contains("type") || entry.Key.Contains("turn"))
+                    continue; // skip the type and turn entries (e.g. <key, value>: <"1-type", "pantheon">)
 
                 string name = entry.Value;
                 BeliefTypes type;
                 Enum.TryParse(pairs[entry.Key + "-type"], out type);
-                beliefs.Add(new Belief(name, type));
+                int turn = int.Parse(pairs[entry.Key + "-turn"]);
+                beliefs.Add(new BeliefChoice(new Belief(name, type), turn));
             }
         }
     }
 
     public enum BeliefTypes { Pantheon, Founder, Follower, Enhancer, Reformation }
+
+    public class BeliefChoice
+    {
+        public readonly int Turn;
+        private Belief belief;
+        public Belief BeliefAttributes
+        {
+            get { return belief; }
+        }
+
+        public BeliefChoice(Belief b, int turn)
+        {
+            belief = b;
+            Turn = turn;
+        }
+    }
 
     public class Belief
     {

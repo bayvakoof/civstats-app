@@ -30,6 +30,7 @@ namespace civstats
             // CivStats' sqlite lib (System.Data.SQLite) would not release the database file
             // See http://stackoverflow.com/questions/8511901/system-data-sqlite-close-not-releasing-database-file
             // for the solution thats implemented
+            Dictionary<string, string> pairs = new Dictionary<string, string>();
             using (SQLiteConnection dbConnection = new SQLiteConnection("Data Source=" + fullpath + ";Version=3;"))
             {
                 try
@@ -42,8 +43,6 @@ namespace civstats
                         reader = nameQuery.ExecuteReader();
                     }
 
-                    Dictionary<string, string> pairs = new Dictionary<string, string>();
-
                     if (reader.HasRows)
                     {
                         while (reader.Read())
@@ -51,17 +50,10 @@ namespace civstats
                             string key = reader["name"].ToString();
                             string val = reader["value"].ToString();
                             pairs[key] = val;
-#if DEBUG
-                            Console.WriteLine("Got SimpleValue update: {0}, {1}", key, val);
-#endif
                         }
                     }
 
                     reader.Close();
-
-                    ParseDatabaseEntries(pairs);
-                    // raise the event
-                    EmitEvent(new StatsTrackerEventArgs());
                 }
                 catch (Exception e)
                 {
@@ -73,7 +65,12 @@ namespace civstats
                 }
             }
 
-            // SQLiteConnection.ClearAllPools(); // doesn't seem like this is necessary
+            if (pairs.Count != 0) // skip if empty db
+            {
+                ParseDatabaseEntries(pairs);
+                // raise the event
+                EmitEvent(new StatsTrackerEventArgs());
+            }
         }
 
         private void EmitEvent(StatsTrackerEventArgs e)

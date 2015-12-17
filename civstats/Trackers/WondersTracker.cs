@@ -9,20 +9,20 @@ namespace civstats.Trackers
     public class WondersTracker : CivSQLiteDatabaseTracker
     {
         private const string LuaTrueValue = "1";
-        private Dictionary<string, Wonder> wonders;
-        public IEnumerable<Wonder> Wonders
+        private Dictionary<string, BuiltWonder> builtWonders;
+        public IEnumerable<BuiltWonder> BuiltWonders
         {
-            get { return wonders.Values.AsEnumerable(); }
+            get { return builtWonders.Values.AsEnumerable(); }
         }
 
         public WondersTracker() : base("civstats-wonders")
         {
-            wonders = new Dictionary<string, Wonder>();
+            builtWonders = new Dictionary<string, BuiltWonder>();
         }
 
         protected override void ParseDatabaseEntries(Dictionary<string, string> pairs)
         {
-            wonders.Clear();
+            builtWonders.Clear();
 
             // Implemented exactly like policies with keys being in the "id-parameter": true/false
             // format, iterate over wonder ids 
@@ -31,33 +31,50 @@ namespace civstats.Trackers
             foreach (KeyValuePair<string, string> entry in ids)
             {
                 string id = entry.Key;
-                Wonder wonder = new Wonder(
+
+                BuiltWonder builtWonder = new BuiltWonder(
+                    new Wonder(pairs[id + "-name"]),
                     int.Parse(pairs[id + "-turn"]),
-                    pairs[id + "-name"], 
                     pairs[id + "-city"], 
                     pairs[id + "-conquered"] == LuaTrueValue);
-                
-                wonder.Retained = (entry.Value == LuaTrueValue);
-                wonders[id] = wonder;
+
+                builtWonder.Retained = (entry.Value == LuaTrueValue);
+                builtWonders[id] = builtWonder;
             }
+        }
+    }
+
+    public class BuiltWonder
+    {
+        public readonly int Turn; // the turn it was captured or built
+
+        private Wonder wonder;
+        public Wonder WonderAttributes
+        {
+            get { return wonder; }
+        }
+
+        public readonly string City;
+        public readonly bool Captured; // whether it was acquired thru conquest or built
+        public bool Retained { get; set; } // false if the player lost the city containing it
+
+        public BuiltWonder(Wonder w, int turn, string city, bool captured)
+        {
+            wonder = w;
+            Turn = turn;
+            City = city;
+            Captured = captured;
+            Retained = true;
         }
     }
 
     public class Wonder
     {
-        public readonly int Turn; // the turn it was captured or built
         public readonly string Name;
-        public readonly string City;
-        public readonly bool Captured; // whether it was acquired thru conquest or built
-        public bool Retained { get; set; } // false if the player lost the city containing it
 
-        public Wonder(int turn, string name, string city, bool captured)
+        public Wonder(string name)
         {
-            Turn = turn;
             Name = name;
-            City = city;
-            Captured = captured;
-            Retained = true;
         }
     }
 }
